@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Painel Muller | M CORT'S</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      min-height: 100vh;
+      background-color: #0b0d12;
+      color: #ffffff;
+      font-family: Arial, Helvetica, sans-serif;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 780px;
+      margin: 0 auto;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 16px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+      margin-bottom: 24px;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      letter-spacing: 0.5px;
+    }
+
+    h1 span {
+      color: #3b82f6;
+    }
+
+    .header-acoes {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .btn-site {
+      background: #1d4ed8;
+      color: #ffffff;
+      text-decoration: none;
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 0.88rem;
+      font-weight: bold;
+    }
+
+    .btn-sair {
+      background: rgba(255, 255, 255, 0.08);
+      color: #e5e7eb;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .btn-sair:hover {
+      border-color: #ef4444;
+      color: #fca5a5;
+    }
+
+    .login-box {
+      max-width: 390px;
+      margin: 48px auto;
+      background: #131720;
+      padding: 24px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      text-align: center;
+    }
+
+    .login-box p {
+      color: #9ca3af;
+      font-size: 0.9rem;
+      margin-top: 8px;
+      margin-bottom: 14px;
+    }
+
+    .login-box input {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 12px;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      background: #0b0d12;
+      color: #ffffff;
+      font-size: 1rem;
+    }
+
+    .btn-primary {
+      width: 100%;
+      padding: 12px;
+      background: #dc2626;
+      color: #ffffff;
+      border: none;
+      border-radius: 8px;
+      font-weight: bold;
+      font-size: 0.95rem;
+      cursor: pointer;
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.65;
+      cursor: not-allowed;
+    }
+
+    .aviso-status {
+      margin-top: 12px;
+      font-size: 0.85rem;
+      color: #f87171;
+      min-height: 20px;
+    }
+
+    .day-group {
+      background: #131720;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      padding: 18px;
+      margin-bottom: 18px;
+    }
+
+    .day-title {
+      color: #3b82f6;
+      font-size: 1.15rem;
+      font-weight: bold;
+      margin-bottom: 12px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      padding-bottom: 8px;
+    }
+
+    .booking-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      flex-wrap: wrap;
+    }
+
+    .booking-item:last-child {
+      border-bottom: none;
+    }
+
+    .time-badge {
+      background: #dc2626;
+      color: #ffffff;
+      font-weight: bold;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 0.88rem;
+      display: inline-block;
+      margin-right: 8px;
+    }
+
+    .client-meta {
+      color: #9ca3af;
+      font-size: 0.88rem;
+      margin-top: 5px;
+    }
+
+    .item-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn-wpp {
+      background: #16a34a;
+      color: #ffffff;
+      text-decoration: none;
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-size: 0.82rem;
+      font-weight: bold;
+    }
+
+    .btn-del {
+      background: rgba(239, 68, 68, 0.15);
+      color: #ef4444;
+      border: 1px solid #ef4444;
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-size: 0.82rem;
+      font-weight: bold;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>M <span>CORT'S</span> • Agenda Muller</h1>
+      <div class="header-acoes">
+        <a href="index.html" class="btn-site">Voltar ao Site</a>
+        <button type="button" class="btn-sair" id="btn-sair" style="display: none;">Sair</button>
+      </div>
+    </header>
+
+    <form id="tela-login" class="login-box">
+      <h2>Acesso Restrito</h2>
+      <p>Entre com o e-mail e a senha cadastrados no Firebase para gerenciar a agenda.</p>
+      <input type="email" id="email-input" placeholder="E-mail do Muller" autocomplete="username" required>
+      <input type="password" id="senha-input" placeholder="Digite a senha" autocomplete="current-password" required>
+      <button type="submit" class="btn-primary" id="btn-entrar">Entrar na Agenda</button>
+      <div id="status-login" class="aviso-status"></div>
+    </form>
+
+    <div id="tela-agenda" style="display: none;">
+      <p style="color: #9ca3af; margin-bottom: 16px; font-size: 0.9rem;">
+        Atualização automática em tempo real. Ao liberar um horário, ele volta a ficar disponível no site.
+      </p>
+      <div id="lista-agendamentos">Carregando agendamentos...</div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getDatabase, ref, onValue, remove } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+    import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCNwvebF9lGbE7dI1y9InZ3jInx7s1jsiI",
+      authDomain: "m-corts-agendamento.firebaseapp.com",
+      databaseURL: "https://m-corts-agendamento-default-rtdb.firebaseio.com",
+      projectId: "m-corts-agendamento",
+      storageBucket: "m-corts-agendamento.firebasestorage.app",
+      messagingSenderId: "446464478587",
+      appId: "1:446464478587:web:d322b1fc8e387f1503c1de"
+    };
+
+    const formLogin = document.getElementById("tela-login");
+    const telaAgenda = document.getElementById("tela-agenda");
+    const statusLogin = document.getElementById("status-login");
+    const btnEntrar = document.getElementById("btn-entrar");
+    const btnSair = document.getElementById("btn-sair");
+
+    let db = null;
+    let auth = null;
+    let escutaAtiva = false;
+
+    try {
+      const app = initializeApp(firebaseConfig);
+      db = getDatabase(app);
+      auth = getAuth(app);
+    } catch (err) {
+      statusLogin.textContent = "Aviso: falha ao iniciar o Firebase (" + err.message + ").";
+    }
+
+    if (auth) {
+      onAuthStateChanged(auth, (user) => {
+        if (user) {
+          formLogin.style.display = "none";
+          telaAgenda.style.display = "block";
+          btnSair.style.display = "inline-block";
+          statusLogin.textContent = "";
+          iniciarEscuta();
+        } else {
+          formLogin.style.display = "block";
+          telaAgenda.style.display = "none";
+          btnSair.style.display = "none";
+        }
+      });
+    }
+
+    formLogin.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      if (!auth) {
+        statusLogin.textContent = "Firebase Auth não inicializado.";
+        return;
+      }
+
+      const email = document.getElementById("email-input").value.trim();
+      const senha = document.getElementById("senha-input").value;
+
+      btnEntrar.disabled = true;
+      btnEntrar.textContent = "Entrando...";
+      statusLogin.textContent = "";
+
+      try {
+        await signInWithEmailAndPassword(auth, email, senha);
+        document.getElementById("senha-input").value = "";
+      } catch (err) {
+        statusLogin.textContent = "E-mail ou senha incorretos.";
+      } finally {
+        btnEntrar.disabled = false;
+        btnEntrar.textContent = "Entrar na Agenda";
+      }
+    });
+
+    btnSair.addEventListener("click", async () => {
+      if (auth) {
+        await signOut(auth);
+      }
+    });
+
+    function iniciarEscuta() {
+      if (escutaAtiva) return;
+      escutaAtiva = true;
+
+      const container = document.getElementById("lista-agendamentos");
+      if (!db) {
+        container.innerHTML = `<div class="day-group"><p style="color:#f87171;">Banco não conectado. Abra via servidor local (Live Server) e confira a conexão.</p></div>`;
+        return;
+      }
+
+      onValue(ref(db, "agendamentos"), (snapshot) => {
+        const dados = snapshot.val() || {};
+        container.innerHTML = "";
+
+        const datasOrdenadas = Object.keys(dados).sort();
+        if (datasOrdenadas.length === 0) {
+          container.innerHTML = `<div class="day-group"><p style="color:#9ca3af;">Nenhum agendamento registrado ainda.</p></div>`;
+          return;
+        }
+
+        datasOrdenadas.forEach((dataIso) => {
+          const [ano, mes, dia] = dataIso.split("-");
+          const horariosObj = dados[dataIso] || {};
+          const horasOrdenadas = Object.keys(horariosObj).sort();
+
+          const cardDia = document.createElement("div");
+          cardDia.className = "day-group";
+          cardDia.innerHTML = `<div class="day-title">Data: ${dia}/${mes}/${ano}</div>`;
+
+          horasOrdenadas.forEach((hora) => {
+            const item = horariosObj[hora];
+            if (!item) return;
+
+            const telLimpo = String(item.whatsapp || "").replace(/\D/g, "");
+            const telWpp = telLimpo.startsWith("55") ? telLimpo : `55${telLimpo}`;
+            const msgConfirmacao = encodeURIComponent(
+              `Olá ${item.nome || "cliente"}, aqui é da M CORT'S. Confirmando seu horário dia ${dia}/${mes} às ${hora} (${item.servico || "Atendimento"}).`
+            );
+
+            const row = document.createElement("div");
+            row.className = "booking-item";
+            row.innerHTML = `
+              <div>
+                <span class="time-badge">${hora}</span>
+                <strong>${item.nome || "Cliente"}</strong>
+                <div class="client-meta">${item.servico || ""} • WhatsApp: ${item.whatsapp || "-"}</div>
+              </div>
+              <div class="item-actions">
+                <a href="https://wa.me/${telWpp}?text=${msgConfirmacao}" target="_blank" rel="noopener" class="btn-wpp">WhatsApp</a>
+                <button type="button" class="btn-del">Liberar Horário</button>
+              </div>
+            `;
+
+            row.querySelector(".btn-del").addEventListener("click", async () => {
+              if (confirm(`Liberar o horário ${hora} do dia ${dia}/${mes} (${item.nome || "cliente"})?`)) {
+                try {
+                  await remove(ref(db, `agendamentos/${dataIso}/${hora}`));
+                } catch (erroRemocao) {
+                  alert("Não foi possível liberar o horário. Verifique se você está logado.");
+                }
+              }
+            });
+
+            cardDia.appendChild(row);
+          });
+
+          container.appendChild(cardDia);
+        });
+      }, (erroBanco) => {
+        container.innerHTML = `<div class="day-group"><p style="color:#f87171;">Erro ao ler agendamentos: ${erroBanco.message}</p></div>`;
+      });
+    }
+  </script>
+</body>
+</html>
