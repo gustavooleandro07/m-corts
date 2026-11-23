@@ -219,7 +219,7 @@
 
     <form id="tela-login" class="login-box">
       <h2>Acesso Restrito</h2>
-      <p>Entre com o e-mail e a senha cadastrados no Firebase para gerenciar a agenda.</p>
+      <p>Entre com seu e-mail e senha para gerenciar a agenda.</p>
       <input type="email" id="email-input" placeholder="E-mail do Muller" autocomplete="username" required>
       <input type="password" id="senha-input" placeholder="Digite a senha" autocomplete="current-password" required>
       <button type="submit" class="btn-primary" id="btn-entrar">Entrar na Agenda</button>
@@ -234,10 +234,12 @@
     </div>
   </div>
 
-  <script type="module">
+ <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
     import { getDatabase, ref, onValue, update } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
     import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    // App Check desligado por enquanto (ative so depois de tudo testado):
+    // import { initializeAppCheck, ReCaptchaEnterpriseProvider } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app-check.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyCNwvebF9lGbE7dI1y9InZ3jInx7s1jsiI",
@@ -248,6 +250,8 @@
       messagingSenderId: "446464478587",
       appId: "1:446464478587:web:d322b1fc8e387f1503c1de"
     };
+
+    const NOME_NEGOCIO = "M CORT'S";
 
     const formLogin = document.getElementById("tela-login");
     const telaAgenda = document.getElementById("tela-agenda");
@@ -261,6 +265,7 @@
 
     try {
       const app = initializeApp(firebaseConfig);
+      // initializeAppCheck(app, { provider: new ReCaptchaEnterpriseProvider("6Les2S0uAAAAACkhPaYSWGRvAG0rlkk4Jzj5w1JM"), isTokenAutoRefreshEnabled: true });
       db = getDatabase(app);
       auth = getAuth(app);
     } catch (err) {
@@ -315,100 +320,99 @@
     });
 
     function iniciarEscuta() {
-  if (escutaAtiva) return;
-  escutaAtiva = true;
+      if (escutaAtiva) return;
+      escutaAtiva = true;
 
-  const NOME_NEGOCIO = "M CORT'S"; // na Barber House: "Barber House"
-  const container = document.getElementById("lista-agendamentos");
+      const container = document.getElementById("lista-agendamentos");
 
-  const el = (tag, cls, texto) => {
-    const n = document.createElement(tag);
-    if (cls) n.className = cls;
-    if (texto !== undefined) n.textContent = texto;
-    return n;
-  };
-  const msgCard = (texto, cor) => {
-    container.textContent = "";
-    const card = el("div", "day-group");
-    const p = el("p", "", texto);
-    p.style.color = cor;
-    card.appendChild(p);
-    container.appendChild(card);
-  };
+      const el = (tag, cls, texto) => {
+        const n = document.createElement(tag);
+        if (cls) n.className = cls;
+        if (texto !== undefined) n.textContent = texto;
+        return n;
+      };
+      const msgCard = (texto, cor) => {
+        container.textContent = "";
+        const card = el("div", "day-group");
+        const p = el("p", "", texto);
+        p.style.color = cor;
+        card.appendChild(p);
+        container.appendChild(card);
+      };
 
-  if (!db) {
-    msgCard("Banco não conectado.", "#f87171");
-    return;
-  }
+      if (!db) {
+        msgCard("Banco não conectado.", "#f87171");
+        return;
+      }
 
-  const hoje = new Date();
-  const hojeIso = `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, "0")}-${String(hoje.getDate()).padStart(2, "0")}`;
+      const hoje = new Date();
+      const hojeIso = `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, "0")}-${String(hoje.getDate()).padStart(2, "0")}`;
 
-  onValue(ref(db, "agendamentos"), (snapshot) => {
-    const dados = snapshot.val() || {};
-    container.textContent = "";
+      onValue(ref(db, "agendamentos"), (snapshot) => {
+        const dados = snapshot.val() || {};
+        container.textContent = "";
 
-    const datas = Object.keys(dados).filter((d) => d >= hojeIso).sort();
-    if (datas.length === 0) {
-      msgCard("Nenhum agendamento a partir de hoje.", "#9ca3af");
-      return;
-    }
+        const datas = Object.keys(dados).filter((d) => d >= hojeIso).sort();
+        if (datas.length === 0) {
+          msgCard("Nenhum agendamento a partir de hoje.", "#9ca3af");
+          return;
+        }
 
-    datas.forEach((dataIso) => {
-      const [ano, mes, dia] = dataIso.split("-");
-      const horariosObj = dados[dataIso] || {};
+        datas.forEach((dataIso) => {
+          const [ano, mes, dia] = dataIso.split("-");
+          const horariosObj = dados[dataIso] || {};
 
-      const cardDia = el("div", "day-group");
-      cardDia.appendChild(el("div", "day-title", `Data: ${dia}/${mes}/${ano}`));
+          const cardDia = el("div", "day-group");
+          cardDia.appendChild(el("div", "day-title", `Data: ${dia}/${mes}/${ano}`));
 
-      Object.keys(horariosObj).sort().forEach((hora) => {
-        const item = horariosObj[hora];
-        if (!item) return;
+          Object.keys(horariosObj).sort().forEach((hora) => {
+            const item = horariosObj[hora];
+            if (!item) return;
 
-        const telLimpo = String(item.whatsapp || "").replace(/\D/g, "");
-        const telWpp = telLimpo.startsWith("55") ? telLimpo : `55${telLimpo}`;
-        const msg = encodeURIComponent(
-          `Olá ${item.nome || "cliente"}, aqui é da ${NOME_NEGOCIO}. Confirmando seu horário dia ${dia}/${mes} às ${hora} (${item.servico || "Atendimento"}).`
-        );
+            const telLimpo = String(item.whatsapp || "").replace(/\D/g, "");
+            const telWpp = telLimpo.startsWith("55") ? telLimpo : `55${telLimpo}`;
+            const msg = encodeURIComponent(
+              `Olá ${item.nome || "cliente"}, aqui é da ${NOME_NEGOCIO}. Confirmando seu horário dia ${dia}/${mes} às ${hora} (${item.servico || "Atendimento"}).`
+            );
 
-        const row = el("div", "booking-item");
+            const row = el("div", "booking-item");
 
-        const esquerda = el("div");
-        esquerda.appendChild(el("span", "time-badge", hora));
-        esquerda.appendChild(el("strong", "", item.nome || "Cliente"));
-        esquerda.appendChild(el("div", "client-meta", `${item.servico || ""} • WhatsApp: ${item.whatsapp || "-"}`));
+            const esquerda = el("div");
+            esquerda.appendChild(el("span", "time-badge", hora));
+            esquerda.appendChild(el("strong", "", item.nome || "Cliente"));
+            esquerda.appendChild(el("div", "client-meta", `${item.servico || ""} • WhatsApp: ${item.whatsapp || "-"}`));
 
-        const acoes = el("div", "item-actions");
-        const link = el("a", "btn-wpp", "WhatsApp");
-        link.href = `https://wa.me/${telWpp}?text=${msg}`;
-        link.target = "_blank";
-        link.rel = "noopener";
+            const acoes = el("div", "item-actions");
+            const link = el("a", "btn-wpp", "WhatsApp");
+            link.href = `https://wa.me/${telWpp}?text=${msg}`;
+            link.target = "_blank";
+            link.rel = "noopener";
 
-        const btnDel = el("button", "btn-del", "Liberar Horário");
-        btnDel.type = "button";
-        btnDel.addEventListener("click", async () => {
-          if (!confirm(`Liberar o horário ${hora} do dia ${dia}/${mes} (${item.nome || "cliente"})?`)) return;
-          try {
-            await update(ref(db), {
-              [`agendamentos/${dataIso}/${hora}`]: null,
-              [`ocupados/${dataIso}/${hora}`]: null
+            const btnDel = el("button", "btn-del", "Liberar Horário");
+            btnDel.type = "button";
+            btnDel.addEventListener("click", async () => {
+              if (!confirm(`Liberar o horário ${hora} do dia ${dia}/${mes} (${item.nome || "cliente"})?`)) return;
+              try {
+                await update(ref(db), {
+                  [`agendamentos/${dataIso}/${hora}`]: null,
+                  [`ocupados/${dataIso}/${hora}`]: null
+                });
+              } catch (e) {
+                alert("Não foi possível liberar o horário. Verifique se você está logado.");
+              }
             });
-          } catch (e) {
-            alert("Não foi possível liberar o horário. Verifique se você está logado.");
-          }
+
+            acoes.append(link, btnDel);
+            row.append(esquerda, acoes);
+            cardDia.appendChild(row);
+          });
+
+          container.appendChild(cardDia);
         });
-
-        acoes.append(link, btnDel);
-        row.append(esquerda, acoes);
-        cardDia.appendChild(row);
+      }, () => {
+        msgCard("Erro ao ler os agendamentos. Saia e entre de novo.", "#f87171");
       });
-
-      container.appendChild(cardDia);
-    });
-  }, () => {
-    msgCard("Erro ao ler os agendamentos. Saia e entre de novo.", "#f87171");
-  });
-}
+    }
   </script>
 </body>
 </html>

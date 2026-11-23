@@ -3,7 +3,6 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="robots" content="noindex, nofollow">
   <title>M CORT'S | Barbearia em Carapicuíba</title>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ef4444' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='6' cy='6' r='3'/%3E%3Ccircle cx='6' cy='18' r='3'/%3E%3Cline x1='20' y1='4' x2='8.12' y2='15.88'/%3E%3Cline x1='14.47' y1='14.48' x2='20' y2='20'/%3E%3Cline x1='8.12' y1='8.12' x2='12' y2='12'/%3E%3C/svg%3E">
   <meta name="description" content="Cortes modernos, degradê, barba e acabamento impecável na M CORT'S em Carapicuíba. Agende online seu horário." />
@@ -1086,9 +1085,11 @@
 
   <button id="btn-topo" title="Voltar ao topo" aria-label="Voltar ao topo">↑</button>
 
-  <script type="module">
+ <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
     import { getDatabase, ref, onValue, update } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+    // App Check desligado por enquanto (ative so depois de tudo testado):
+    // import { initializeAppCheck, ReCaptchaEnterpriseProvider } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app-check.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyCNwvebF9lGbE7dI1y9InZ3jInx7s1jsiI",
@@ -1101,6 +1102,7 @@
     };
 
     const app = initializeApp(firebaseConfig);
+    // initializeAppCheck(app, { provider: new ReCaptchaEnterpriseProvider("6Les2S0uAAAAACkhPaYSWGRvAG0rlkk4Jzj5w1JM"), isTokenAutoRefreshEnabled: true });
     const db = getDatabase(app);
     const TELEFONE_MULLER = "5511952761470";
 
@@ -1111,35 +1113,35 @@
     let dataSelecionada = null;
     let horaSelecionada = null;
 
-   function gerarProximosDias(qtd = 14) {
-  const dias = [];
-  const nomesSemana = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
-  const agora = new Date();
-  const minutosAgora = agora.getHours() * 60 + agora.getMinutes();
-  const cursor = new Date();
-  cursor.setHours(0, 0, 0, 0);
-  const hojeIso = `${cursor.getFullYear()}-${String(cursor.getMonth() + 1).padStart(2, "0")}-${String(cursor.getDate()).padStart(2, "0")}`;
+    function gerarProximosDias(qtd = 14) {
+      const dias = [];
+      const nomesSemana = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
+      const agora = new Date();
+      const minutosAgora = agora.getHours() * 60 + agora.getMinutes();
+      const cursor = new Date();
+      cursor.setHours(0, 0, 0, 0);
+      const hojeIso = `${cursor.getFullYear()}-${String(cursor.getMonth() + 1).padStart(2, "0")}-${String(cursor.getDate()).padStart(2, "0")}`;
 
-  while (dias.length < qtd) {
-    const diaSemana = cursor.getDay();
-    if (diaSemana !== 0 && diaSemana !== 1) {
-      const ano = cursor.getFullYear();
-      const mes = String(cursor.getMonth() + 1).padStart(2, "0");
-      const dia = String(cursor.getDate()).padStart(2, "0");
-      const iso = `${ano}-${mes}-${dia}`;
-      const base = diaSemana === 6 ? HORARIOS_SABADO : HORARIOS_TER_SEX;
-      const horarios = base.filter((h) => iso !== hojeIso || parseInt(h, 10) * 60 >= minutosAgora + 30);
+      while (dias.length < qtd) {
+        const diaSemana = cursor.getDay();
+        if (diaSemana !== 0 && diaSemana !== 1) {
+          const ano = cursor.getFullYear();
+          const mes = String(cursor.getMonth() + 1).padStart(2, "0");
+          const dia = String(cursor.getDate()).padStart(2, "0");
+          const iso = `${ano}-${mes}-${dia}`;
+          const base = diaSemana === 6 ? HORARIOS_SABADO : HORARIOS_TER_SEX;
+          const horarios = base.filter((h) => iso !== hojeIso || parseInt(h, 10) * 60 >= minutosAgora + 30);
 
-      if (horarios.length > 0) {
-        dias.push({ iso, semana: nomesSemana[diaSemana], exibicao: `${dia}/${mes}`, horarios });
+          if (horarios.length > 0) {
+            dias.push({ iso, semana: nomesSemana[diaSemana], exibicao: `${dia}/${mes}`, horarios });
+          }
+        }
+        cursor.setDate(cursor.getDate() + 1);
       }
+      return dias;
     }
-    cursor.setDate(cursor.getDate() + 1);
-  }
-  return dias;
-}
 
-const diasDisponiveis = gerarProximosDias(14);
+    const diasDisponiveis = gerarProximosDias(14);
 
     function renderizarAgenda() {
       const containerDatas = document.getElementById("lista-datas");
@@ -1210,90 +1212,94 @@ const diasDisponiveis = gerarProximosDias(14);
       });
     }
 
-   onValue(ref(db, "ocupados"), (snapshot) => {
-  agendamentosBanco = snapshot.val() || {};
-  renderizarAgenda();
-});
-
-    document.getElementById("form-agendamento").addEventListener("submit", async (e) => {
-  e.preventDefault();
-
-  if (!dataSelecionada || !horaSelecionada) {
-    alert("Por favor, selecione uma data e um horário disponível.");
-    return;
-  }
-
-  const nome = document.getElementById("cliente-nome").value.trim().slice(0, 80);
-  const whatsapp = document.getElementById("cliente-whatsapp").value.replace(/\D/g, "");
-  const servico = document.getElementById("cliente-servico").value;
-  const btnConfirmar = document.getElementById("btn-confirmar");
-
-  if (nome.length < 2) {
-    alert("Digite seu nome completo.");
-    return;
-  }
-  if (whatsapp.length < 10 || whatsapp.length > 13) {
-    alert("Digite um WhatsApp válido com DDD. Ex: 11999999999");
-    return;
-  }
-
-  btnConfirmar.disabled = true;
-  btnConfirmar.textContent = "Confirmando horário...";
-
-  try {
-    // Grava os dois caminhos de uma vez (tudo ou nada).
-    // Se alguém reservou antes, as regras recusam e cai no catch.
-    await update(ref(db), {
-      [`agendamentos/${dataSelecionada}/${horaSelecionada}`]: {
-        nome,
-        whatsapp,
-        servico,
-        data: dataSelecionada,
-        hora: horaSelecionada,
-        criadoEm: new Date().toISOString()
-      },
-      [`ocupados/${dataSelecionada}/${horaSelecionada}`]: true
+    // Le so "ocupados" (sem nome nem telefone)
+    onValue(ref(db, "ocupados"), (snapshot) => {
+      agendamentosBanco = snapshot.val() || {};
+      renderizarAgenda();
+    }, (erro) => {
+      console.error("Erro ao ler horarios:", erro);
+      document.getElementById("lista-datas").textContent = "Não foi possível carregar os horários. Tente novamente em instantes.";
     });
 
-    const [ano, mes, dia] = dataSelecionada.split("-");
-    const dataBr = `${dia}/${mes}/${ano}`;
+    document.getElementById("form-agendamento").addEventListener("submit", async (e) => {
+      e.preventDefault();
 
-    const msgWpp = `Olá. Acabei de agendar um atendimento pelo site.\n\n` +
-                   `*Cliente:* ${nome}\n` +
-                   `*Serviço:* ${servico}\n` +
-                   `*Data:* ${dataBr}\n` +
-                   `*Horário:* ${horaSelecionada}`;
-    const linkWpp = `https://wa.me/${TELEFONE_MULLER}?text=${encodeURIComponent(msgWpp)}`;
+      if (!dataSelecionada || !horaSelecionada) {
+        alert("Por favor, selecione uma data e um horário disponível.");
+        return;
+      }
 
-    // Monta o aviso sem innerHTML com dados digitados
-    const feedback = document.getElementById("feedback-agendamento");
-    feedback.textContent = "";
-    feedback.style.display = "block";
-    const t = document.createElement("strong");
-    t.textContent = "Agendamento confirmado no sistema!";
-    const info = document.createElement("div");
-    info.style.margin = "6px 0 12px";
-    info.textContent = `Dia ${dataBr} às ${horaSelecionada} (${servico}).`;
-    const a = document.createElement("a");
-    a.href = linkWpp;
-    a.target = "_blank";
-    a.rel = "noopener";
-    a.className = "btn-primary";
-    a.style.width = "100%";
-    a.textContent = "Enviar comprovante no WhatsApp";
-    feedback.append(t, info, a);
+      const nome = document.getElementById("cliente-nome").value.trim().slice(0, 80);
+      const whatsapp = document.getElementById("cliente-whatsapp").value.replace(/\D/g, "");
+      const servico = document.getElementById("cliente-servico").value;
+      const btnConfirmar = document.getElementById("btn-confirmar");
 
-    horaSelecionada = null;
-    document.getElementById("cliente-nome").value = "";
-    document.getElementById("cliente-whatsapp").value = "";
-  } catch (erro) {
-    alert("Não foi possível reservar. Esse horário pode ter acabado de ser ocupado. Escolha outro ou tente de novo.");
-    console.error(erro);
-  } finally {
-    btnConfirmar.disabled = false;
-    btnConfirmar.textContent = "Confirmar Agendamento";
-  }
-});
+      if (nome.length < 2) {
+        alert("Digite seu nome completo.");
+        return;
+      }
+      if (whatsapp.length < 10 || whatsapp.length > 13) {
+        alert("Digite um WhatsApp válido com DDD. Ex: 11999999999");
+        return;
+      }
+
+      btnConfirmar.disabled = true;
+      btnConfirmar.textContent = "Confirmando horário...";
+
+      try {
+        // Grava os dois caminhos de uma vez (tudo ou nada).
+        // Se alguem reservou antes, as regras recusam e cai no catch.
+        await update(ref(db), {
+          [`agendamentos/${dataSelecionada}/${horaSelecionada}`]: {
+            nome,
+            whatsapp,
+            servico,
+            data: dataSelecionada,
+            hora: horaSelecionada,
+            criadoEm: new Date().toISOString()
+          },
+          [`ocupados/${dataSelecionada}/${horaSelecionada}`]: true
+        });
+
+        const [ano, mes, dia] = dataSelecionada.split("-");
+        const dataBr = `${dia}/${mes}/${ano}`;
+
+        const msgWpp = `Olá. Acabei de agendar um atendimento pelo site da M CORT'S.\n\n` +
+                       `*Cliente:* ${nome}\n` +
+                       `*Serviço:* ${servico}\n` +
+                       `*Data:* ${dataBr}\n` +
+                       `*Horário:* ${horaSelecionada}`;
+        const linkWpp = `https://wa.me/${TELEFONE_MULLER}?text=${encodeURIComponent(msgWpp)}`;
+
+        const feedback = document.getElementById("feedback-agendamento");
+        feedback.textContent = "";
+        feedback.style.display = "block";
+        const t = document.createElement("strong");
+        t.textContent = "Agendamento confirmado no sistema!";
+        const info = document.createElement("div");
+        info.style.margin = "6px 0 12px";
+        info.textContent = `Dia ${dataBr} às ${horaSelecionada} (${servico}).`;
+        const a = document.createElement("a");
+        a.href = linkWpp;
+        a.target = "_blank";
+        a.rel = "noopener";
+        a.className = "btn-primary";
+        a.style.width = "100%";
+        a.textContent = "Enviar comprovante no WhatsApp do Muller";
+        feedback.append(t, info, a);
+
+        horaSelecionada = null;
+        document.getElementById("cliente-nome").value = "";
+        document.getElementById("cliente-whatsapp").value = "";
+      } catch (erro) {
+        alert("Não foi possível reservar. Esse horário pode ter acabado de ser ocupado. Escolha outro ou tente de novo.");
+        console.error(erro);
+      } finally {
+        btnConfirmar.disabled = false;
+        btnConfirmar.textContent = "Confirmar Agendamento";
+      }
+    });
+  </script>
   </script>
 
   <script>
